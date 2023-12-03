@@ -51,7 +51,7 @@ parseGame s = (fst . head) (parse readGame s)
 readGame :: ReadP Game
 readGame = do
   void (string "Game ")
-  n <- number 1 <|> number 2 <|> number 3
+  n <- number
   void (string ": ")
   sets <- sepBy1 readSubset (char ';')
   eof
@@ -72,17 +72,13 @@ readSubset = do
 readCube :: ReadP (Int, String)
 readCube = do
   skipSpaces
-  n <- number 1 <|> number 2
+  n <- number
   skipSpaces
   c <- string "red" <|> string "green" <|> string "blue"
   pure (n, c)
 
-
-digit :: ReadP Char
-digit = satisfy isDigit
-
-number :: Int -> ReadP Int
-number n = fmap read (count n digit)
+number :: ReadP Int
+number = read <$> munch1 isDigit
 
 showSolution :: Show a => String -> a -> IO ()
 showSolution part sol =

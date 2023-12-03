@@ -53,14 +53,14 @@ readGame = do
   void (string "Game ")
   n <- number 1 <|> number 2 <|> number 3
   void (string ": ")
-  sets <- sepBy1 readSubset (string ";")
+  sets <- sepBy1 readSubset (char ';')
   eof
   pure (Game n sets)
 
 readSubset :: ReadP Subset
 readSubset = do
   skipSpaces
-  cubes <-  sepBy1 readCube (string ",")
+  cubes <-  sepBy1 readCube (char ',')
   let sub = foldl' makeSub (Subset {red = 0, green = 0, blue = 0}) cubes
       makeSub acc cube = case cube of
         (n, "red") -> acc {red = n}

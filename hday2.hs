@@ -7,16 +7,16 @@ import Data.List (foldl')
 import Control.Applicative ((<|>))
 import Control.Monad (void)
 import Text.ParserCombinators.ReadP
-
-parse :: ReadP a -> ReadS a
-parse = readP_to_S
-
-
-main :: IO ()
-main = do
-  games <- readGames . lines <$> readFile "day2.txt"
-  showSolution "Part1: " (part1 games)
-  showSolution "Part2: " (part2 games)
+  (ReadP
+  ,readP_to_S
+  ,skipSpaces
+  ,string
+  ,char
+  ,sepBy1
+  ,endBy1
+  ,munch1
+  ,eof
+  )
 
 data Subset = Subset {red :: Int
                      ,green :: Int
@@ -26,6 +26,13 @@ data Subset = Subset {red :: Int
 data Game = Game {game :: Int
                  ,subsets :: [Subset]
                  } deriving Show
+
+main :: IO ()
+main = do
+  games <- parseGames <$> readFile "day2.txt"
+  showSolution "Part1: " (part1 games)
+  showSolution "Part2: " (part2 games)
+
 
 part1 :: [Game] -> Int
 part1 = foldl' go 0
@@ -42,11 +49,17 @@ part2 games = foldl' (+) 0 (map power games)
       where sub = foldl' power' (Subset 0 0 0) subs
             power' (Subset r1 g1 b1) (Subset r2 g2 b2) = Subset (max r1 r2) (max g1 g2) (max b1 b2)
 
-readGames :: [String] -> [Game]
-readGames = map parseGame
+parseGames :: String -> [Game]
+parseGames s = (fst . head) (parse readGames s)
 
-parseGame :: String -> Game
-parseGame s = (fst . head) (parse readGame s)
+parse :: ReadP a -> ReadS a
+parse = readP_to_S
+
+readGames :: ReadP [Game]
+readGames = do
+  games <- endBy1 readGame (char '\n')
+  eof
+  pure games
 
 readGame :: ReadP Game
 readGame = do
@@ -54,7 +67,6 @@ readGame = do
   n <- number
   void (string ": ")
   sets <- sepBy1 readSubset (char ';')
-  eof
   pure (Game n sets)
 
 readSubset :: ReadP Subset

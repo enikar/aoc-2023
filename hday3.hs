@@ -22,6 +22,7 @@ main = do
   showSolution "Part1" (part1 grid numbers)
   showSolution "Part2" (part2 grid numbers stars)
 
+-- Add numbers which are near a symbol
 part1 :: M.Map (Int, Int) Char -> [Number] -> Int
 part1 grid = foldl' go 0
   where
@@ -29,6 +30,7 @@ part1 grid = foldl' go 0
       |nearSymbol grid num = acc + number num
       |otherwise           = acc
 
+-- add the product of all pairs of Number which are near a star
 part2 :: M.Map (Int, Int) Char -> [Number] -> [(Int, Int)] -> Integer
 part2 grid numbers = foldl' go 0
   where
@@ -42,7 +44,7 @@ part2 grid numbers = foldl' go 0
       case nub (map (findNumber numbers)  ps) of
         [n1, n2] -> fromIntegral (number n1 * number n2)
         _        -> 0
-
+-- return the Number which is at postion p
 findNumber :: [Number] -> (Int, Int) -> Number
 findNumber numbers p = fromMaybe errorFind (find isAtPos numbers)
   where
@@ -51,6 +53,7 @@ findNumber numbers p = fromMaybe errorFind (find isAtPos numbers)
                   && xstart num <= fst p
                   && xend num >= fst p
 
+-- a list of relative coordinates for neigbours.
 neighbours :: [(Int,Int)]
 neighbours = [(-1,-1)
              ,(-1,0)
@@ -65,6 +68,7 @@ neighbours = [(-1,-1)
 addPair :: (Int, Int) -> (Int,Int) -> (Int,Int)
 addPair (x,y) (x',y') = (x+x', y+y')
 
+-- Collect all coordinates wich are digits near a star
 nearDigit :: M.Map (Int, Int) Char -> (Int, Int) ->  [(Int,Int)]
 nearDigit grid star = foldr go [] positions
   where
@@ -77,6 +81,7 @@ nearDigit grid star = foldr go [] positions
                      | otherwise -> acc
 
 
+-- return true if the Number is near a symbol.
 nearSymbol :: M.Map (Int, Int) Char -> Number -> Bool
 nearSymbol grid num = any go positions
   where
@@ -93,6 +98,7 @@ nearSymbol grid num = any go positions
 isSymbol :: Char -> Bool
 isSymbol c = not (isDigit c) && (c /= '.')
 
+-- build the grid as a Map of all coordinates
 buildGrid :: [String] -> M.Map (Int, Int) Char
 buildGrid ls = M.fromList (zip inds s)
   where
@@ -101,9 +107,16 @@ buildGrid ls = M.fromList (zip inds s)
     xmax = length (head ls)
     inds = [(x,y) | y <- [1..ymax], x <- [1..xmax]]
 
+-- build a list of all Number in the input datas
+-- ls is a list of input file's lines
+-- We can use Map.foldrWithKey but, we need to exchange the coordinate
+-- in each pair to be sure we are reading by line. It is also not clear
+-- when changing of line can be manage.
 buildNumbers :: [String] -> [Number]
 buildNumbers ls = concat (zipWith  buildNumbers' [1..] ls)
 
+-- build the list of all Number in a line
+-- row = line number
 buildNumbers' :: Int -> String -> [Number]
 buildNumbers' row aline = finalize (foldr go ([],[]) (zip [1..] aline))
   where
@@ -117,7 +130,8 @@ buildNumbers' row aline = finalize (foldr go ([],[]) (zip [1..] aline))
       | null digits = (numbers, [])
       | otherwise = (readNumber digits : numbers, [])
 
-
+-- when we have isolated consecutive digit in a line
+-- finally caculate the Number, they constitute
 readNumber :: [Number] -> Number
 readNumber [] = error "Error: readNumber: empty list!"
 readNumber (s:ss) = foldl' go s ss
@@ -125,6 +139,7 @@ readNumber (s:ss) = foldl' go s ss
           | y0 /= y1 = error "Error: readNumber: line numbers don't match"
           |otherwise = Number (n0 * 10 + n1) y0 xs0 xs1
 
+-- build a list of coordinates of all star in the grid
 buildStars :: M.Map (Int, Int) Char -> [(Int, Int)]
 buildStars = M.keys . M.filter (== '*')
 

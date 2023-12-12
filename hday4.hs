@@ -41,11 +41,10 @@ part2 :: [Card] -> Int
 part2 cards = countCards cards
     where
       countCards = foldl' go 0
-        where go acc c = 1 + acc + countCards (subCards cards)
+        where go acc c = 1 + acc + countCards subCards
                 where
                   n = card c
-                  subCards [] = []
-                  subCards cs = take (score c) (drop n cs)
+                  subCards = take (score c) (drop n cards)
 
 powerOfTwo :: Int -> Int
 powerOfTwo n = 2 ^ n

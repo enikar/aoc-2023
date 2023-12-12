@@ -43,8 +43,10 @@ part1 = foldl' go 0
     acceptable (Subset r g b) = r <= 12 && g <= 13 && b <= 14
 
 part2 :: [Game] -> Int
-part2 games = foldl' (+) 0 (map power games)
+part2 = foldl' go 0
   where
+    go acc game = acc + power game
+
     power (Game _ subs) = red sub * green sub * blue sub
       where sub = foldl' power' (Subset 0 0 0) subs
             power' (Subset r1 g1 b1) (Subset r2 g2 b2) = Subset (max r1 r2) (max g1 g2) (max b1 b2)

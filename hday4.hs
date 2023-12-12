@@ -22,6 +22,7 @@ main :: IO ()
 main = do
   cards <- parseCards <$> readFile "day4.txt"
   showSolution "Part1" (part1 cards)
+  showSolution "Part2" (part2 cards)
 
 showSolution :: Show a => String -> a -> IO ()
 showSolution part sol =
@@ -30,17 +31,24 @@ showSolution part sol =
 part1 :: [Card] -> Int
 part1 = foldl' go 0
   where
-    go acc card = acc + countPoints card
+    go acc card
+      | n == 0 = acc
+      | otherwise = acc + powerOfTwo (n-1)
+        where
+          n = score card
+
+part2 :: [Card] -> Int
+part2 cards = countCards cards
+    where
+      countCards = foldl' go 0
+        where go acc c = 1 + acc + countCards (subCards cards)
+                where
+                  n = card c
+                  subCards [] = []
+                  subCards cs = take (score c) (drop n cs)
 
 powerOfTwo :: Int -> Int
 powerOfTwo n = 2 ^ n
-
-countPoints :: Card -> Int
-countPoints card
-  | n == 0 = 0
-  | otherwise = powerOfTwo (n-1)
-    where
-      n = score card
 
 parseCards :: String -> [Card]
 parseCards = fst . head . parse readCards

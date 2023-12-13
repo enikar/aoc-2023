@@ -50,11 +50,19 @@ def count_cards(allcards, subcards)
   end
 end
 
-def part2(cards)
+def part2_naive(cards)
   count_cards(cards, cards)
 end
 
+def part2_opt(cards)
+  memo = cards.reverse.reduce([]) do |acc, c|
+    n = c.score
+    s = acc.take(n).sum + 1
+    acc.unshift(s)
+  end
+  memo.sum
+end
 cards = File.readlines('day4.txt', chomp: true).collect { |s| Card.new(s) }
 
 puts "Part1: #{part1(cards)}"
-puts "Part2: #{part2(cards)}"
+puts "Part2: #{part2_opt(cards)}"

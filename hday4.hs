@@ -22,7 +22,7 @@ main :: IO ()
 main = do
   cards <- parseCards <$> readFile "day4.txt"
   showSolution "Part1" (part1 cards)
-  showSolution "Part2" (part2 cards)
+  showSolution "Part2" (part2_opt cards)
 
 showSolution :: Show a => String -> a -> IO ()
 showSolution part sol =
@@ -37,14 +37,28 @@ part1 = foldl' go 0
         where
           n = score card
 
-part2 :: [Card] -> Int
-part2 cards = countCards cards
+part2_naive :: [Card] -> Int
+part2_naive cards = countCards cards
     where
       countCards = foldl' go 0
         where go acc c = 1 + acc + countCards subCards
                 where
                   n = card c
                   subCards = take (score c) (drop n cards)
+
+-- part2_naive is very slow because we evaluate many times
+-- the same things. We are building the number of copies of each card
+-- incrementally.
+-- But if we build a list of number of copies from the ends of the cards
+-- list, we can memoize these number without the need to compute them
+-- again. Thus we'll use a foldr that builds a list of numbers copies
+-- for each card. At each step the number we add one (the original card)
+-- to the number of copies the current card wins. And push this number to
+-- the memoizing list.
+part2_opt :: [Card] -> Int
+part2_opt = sum . foldr go []
+  where
+    go c acc = 1 + sum (take (score c) acc) : acc
 
 powerOfTwo :: Int -> Int
 powerOfTwo n = 2 ^ n

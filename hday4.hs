@@ -41,10 +41,10 @@ part2_naive :: [Card] -> Int
 part2_naive cards = countCards cards
     where
       countCards = foldl' go 0
-        where go acc c = 1 + acc + countCards subCards
-                where
-                  n = card c
-                  subCards = take (score c) (drop n cards)
+      go acc c = 1 + acc + countCards subCards
+        where
+          n = card c
+          subCards = take (score c) (drop n cards)
 
 -- part2_naive is very slow because we evaluate many times
 -- the same things. We are building the number of copies of each card

@@ -2,7 +2,7 @@
 module Main where
 
 import Data.Char (isDigit)
-import Data.List (foldl')
+import Data.List (foldl', intersect)
 import Control.Monad (void)
 import Text.ParserCombinators.ReadP (string
                                     ,char
@@ -51,14 +51,16 @@ part2_naive cards = countCards cards
 -- incrementally.
 -- But if we build a list of number of copies from the ends of the cards
 -- list, we can memoize these number without the need to compute them
--- again. Thus we'll use a foldr that builds a list of numbers copies
--- for each card. At each step the number we add one (the original card)
+-- again and again. Thus we'll use a foldr that builds a list of numbers copies
+-- for each card. At each step we add one (the original card)
 -- to the number of copies the current card wins. And push this number to
 -- the memoizing list.
 part2_opt :: [Card] -> Int
 part2_opt = sum . foldr go []
   where
-    go c acc = 1 + sum (take (score c) acc) : acc
+    go c acc = 1 + sum copies : acc
+      where
+        copies = take (score c) acc
 
 powerOfTwo :: Int -> Int
 powerOfTwo n = 2 ^ n
@@ -84,10 +86,7 @@ readCard = do
   void (char '|')
   skipSpaces
   nums <- sepBy1 number spaces
-  let cardScore = foldl' go 0 wins
-      go acc k
-        | k `elem` nums = acc + 1
-        | otherwise     = acc
+  let cardScore = length (wins `intersect` nums)
   pure (Card {card=n, score=cardScore})
 
 number :: ReadP Int

@@ -58,9 +58,9 @@ part2_naive cards = countCards cards
 part2_opt :: [Card] -> Int
 part2_opt = sum . foldr go []
   where
-    go c acc = 1 + sum copies : acc
+    go c memo = 1 + sum copies : memo
       where
-        copies = take (score c) acc
+        copies = take (score c) memo
 
 powerOfTwo :: Int -> Int
 powerOfTwo n = 2 ^ n
